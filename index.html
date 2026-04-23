@@ -1,1 +1,1532 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PGI • CleanMail' Pro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
 
+<!--
+╔══════════════════════════════════════════════════════════════════════╗
+║  PGI • CleanMail' Pro — Configuration                               ║
+║                                                                      ║
+║  ► Modifiez les deux lignes ci-dessous AVANT de déployer :           ║
+║                                                                      ║
+║    WORKER_URL  = URL de votre Cloudflare Worker                      ║
+║    AUTH_TOKEN  = Token secret défini via: wrangler secret put AUTH_TOKEN ║
+║                                                                      ║
+║  Ces valeurs sont la seule chose à modifier dans ce fichier.         ║
+╚══════════════════════════════════════════════════════════════════════╝
+-->
+<script>
+  const WORKER_URL  = 'https://cleanmail-pro.VOTRE-COMPTE.workers.dev'; // ← MODIFIER
+  const AUTH_TOKEN  = 'votre-token-secret-ici';                          // ← MODIFIER
+</script>
+
+<style>
+/* ═══════════════════════════════════════════════════════════════════
+   DESIGN SYSTEM — PGI • CleanMail' Pro
+   Palette néon multi-couleurs par section
+═══════════════════════════════════════════════════════════════════ */
+:root {
+  /* Base sombre */
+  --bg:        #020b14;
+  --bg2:       #060e1b;
+  --bg3:       #091523;
+  --card:      #08121e;
+  --border:    #0e2035;
+  --border2:   #163352;
+  --text:      #cee4f5;
+  --text2:     #6ea3c4;
+  --text3:     #2d567a;
+
+  /* Néon Cyan — Dashboard */
+  --neon-cyan:    #00e5ff;
+  --neon-cyan2:   #00b8d9;
+  --neon-cyan-glow: 0 0 20px rgba(0,229,255,.25), 0 0 60px rgba(0,229,255,.08);
+
+  /* Néon Vert — File d'attente */
+  --neon-green:    #39ff14;
+  --neon-green2:   #00e676;
+  --neon-green-glow: 0 0 20px rgba(57,255,20,.25), 0 0 60px rgba(57,255,20,.08);
+
+  /* Néon Lime — Emails validés */
+  --neon-lime:     #c6ff00;
+  --neon-lime2:    #aeea00;
+  --neon-lime-glow: 0 0 20px rgba(198,255,0,.25), 0 0 60px rgba(198,255,0,.08);
+
+  /* Néon Orange — Rejetés */
+  --neon-orange:   #ff6d00;
+  --neon-orange2:  #ff9100;
+  --neon-orange-glow: 0 0 20px rgba(255,109,0,.3), 0 0 60px rgba(255,109,0,.1);
+
+  /* Néon Rose/Pink — Risqués */
+  --neon-pink:     #ff2d78;
+  --neon-pink2:    #ff4f90;
+  --neon-pink-glow: 0 0 20px rgba(255,45,120,.3), 0 0 60px rgba(255,45,120,.1);
+
+  /* Néon Violet — Paramètres */
+  --neon-violet:   #d500f9;
+  --neon-violet2:  #e040fb;
+  --neon-violet-glow: 0 0 20px rgba(213,0,249,.25), 0 0 60px rgba(213,0,249,.08);
+
+  /* Néon Bleu électrique — Logs */
+  --neon-blue:     #2979ff;
+  --neon-blue2:    #448aff;
+  --neon-blue-glow: 0 0 20px rgba(41,121,255,.25), 0 0 60px rgba(41,121,255,.08);
+
+  --radius: 10px;
+  --radius2: 16px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: var(--bg2); }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--neon-cyan); }
+::selection { background: rgba(0,229,255,.2); color: #fff; }
+
+/* ─── HEADER ─────────────────────────────────────────────────────────────── */
+header {
+  position: sticky; top: 0; z-index: 200;
+  background: rgba(2,11,20,.94);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  height: 58px;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 24px;
+}
+.logo {
+  font-family: 'Syne', sans-serif;
+  font-size: 18px; font-weight: 800;
+  letter-spacing: .5px;
+  color: var(--neon-cyan);
+  text-shadow: 0 0 8px rgba(0,229,255,.9), 0 0 20px rgba(0,229,255,.5), 0 0 40px rgba(0,229,255,.2);
+  animation: logo-blink 3.5s ease-in-out infinite;
+}
+.logo-sub {
+  font-family: 'Syne', sans-serif;
+  font-size: 18px; font-weight: 800;
+  color: var(--neon-cyan);
+  text-shadow: 0 0 8px rgba(0,229,255,.9), 0 0 20px rgba(0,229,255,.5), 0 0 40px rgba(0,229,255,.2);
+  animation: logo-blink 3.5s ease-in-out infinite;
+}
+@keyframes logo-blink {
+  0%,100% { text-shadow: 0 0 8px rgba(0,229,255,.9), 0 0 20px rgba(0,229,255,.5), 0 0 40px rgba(0,229,255,.2); opacity:1; }
+  45%     { text-shadow: 0 0 4px rgba(0,229,255,.5), 0 0 10px rgba(0,229,255,.2); opacity:.85; }
+  50%     { text-shadow: 0 0 2px rgba(0,229,255,.3); opacity:.7; }
+  55%     { text-shadow: 0 0 4px rgba(0,229,255,.5), 0 0 10px rgba(0,229,255,.2); opacity:.85; }
+  60%     { text-shadow: 0 0 8px rgba(0,229,255,.9), 0 0 20px rgba(0,229,255,.5), 0 0 40px rgba(0,229,255,.2); opacity:1; }
+}
+.header-right { display: flex; align-items: center; gap: 10px; }
+.status-pill {
+  display: flex; align-items: center; gap: 7px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 5px 12px;
+  font-size: 12px; color: var(--text2);
+}
+.s-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--text3);
+  transition: background .4s, box-shadow .4s;
+}
+.s-dot.ok  { background: var(--neon-green);  box-shadow: 0 0 8px var(--neon-green); animation: pulse-dot 2.5s infinite; }
+.s-dot.err { background: var(--neon-pink);   box-shadow: 0 0 8px var(--neon-pink); }
+@keyframes pulse-dot { 0%,100%{opacity:1}50%{opacity:.5} }
+.btn-hdr {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px; font-weight: 500;
+  background: transparent;
+  border: 1px solid var(--border2);
+  color: var(--text2);
+  padding: 6px 14px; border-radius: 7px;
+  cursor: pointer; transition: .2s;
+}
+.btn-hdr:hover { border-color: var(--neon-cyan); color: var(--neon-cyan); }
+
+/* ─── TABS ───────────────────────────────────────────────────────────────── */
+.tabs-bar {
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  padding: 0 20px;
+  display: flex; align-items: stretch;
+  overflow-x: auto; scrollbar-width: none;
+  gap: 0;
+}
+.tabs-bar::-webkit-scrollbar { display: none; }
+.tab-btn {
+  display: flex; align-items: center; gap: 8px;
+  font-family: 'Syne', sans-serif;
+  font-size: 12.5px; font-weight: 700;
+  letter-spacing: .3px;
+  color: var(--text3);
+  padding: 0 16px;
+  min-height: 46px;
+  border: none; background: transparent;
+  cursor: pointer;
+  white-space: nowrap;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: color .2s, border-color .2s;
+}
+.tab-btn:hover { color: var(--text2); }
+
+/* Couleurs actives par tab */
+.tab-btn[data-tab="dashboard"].active  { color: var(--neon-cyan);   border-color: var(--neon-cyan); }
+.tab-btn[data-tab="queue"].active      { color: var(--neon-green);  border-color: var(--neon-green); }
+.tab-btn[data-tab="validated"].active  { color: var(--neon-lime);   border-color: var(--neon-lime); }
+.tab-btn[data-tab="rejected"].active   { color: var(--neon-orange); border-color: var(--neon-orange); }
+.tab-btn[data-tab="risky"].active      { color: var(--neon-pink);   border-color: var(--neon-pink); }
+.tab-btn[data-tab="settings"].active   { color: var(--neon-violet); border-color: var(--neon-violet); }
+.tab-btn[data-tab="logs"].active       { color: var(--neon-blue);   border-color: var(--neon-blue); }
+
+.tab-icon { font-size: 14px; }
+.tab-badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  background: var(--bg3); border: 1px solid var(--border);
+  color: var(--text3);
+  font-size: 10px; font-weight: 700;
+  font-family: 'JetBrains Mono', monospace;
+  min-width: 20px; height: 18px; padding: 0 5px;
+  border-radius: 9px;
+  transition: .3s;
+}
+.tab-btn[data-tab="queue"].active   .tab-badge { color: var(--neon-green);  border-color: var(--neon-green);  background: rgba(57,255,20,.06); }
+.tab-btn[data-tab="validated"].active .tab-badge { color: var(--neon-lime); border-color: var(--neon-lime);  background: rgba(198,255,0,.06); }
+.tab-btn[data-tab="rejected"].active  .tab-badge { color: var(--neon-orange);border-color: var(--neon-orange); background: rgba(255,109,0,.06); }
+.tab-btn[data-tab="risky"].active     .tab-badge { color: var(--neon-pink);  border-color: var(--neon-pink);   background: rgba(255,45,120,.06); }
+
+/* ─── MAIN ───────────────────────────────────────────────────────────────── */
+main { padding: 22px; max-width: 1400px; margin: 0 auto; }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; animation: fadeUp .22s ease; }
+@keyframes fadeUp { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
+
+/* ─── CARDS ──────────────────────────────────────────────────────────────── */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius2);
+  padding: 20px;
+}
+.card-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 11.5px; font-weight: 700;
+  letter-spacing: .8px; text-transform: uppercase;
+  color: var(--text3);
+  margin-bottom: 18px;
+  display: flex; align-items: center; gap: 8px;
+}
+.ct-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ─── STAT CARDS NÉON ────────────────────────────────────────────────────── */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(195px, 1fr));
+  gap: 14px;
+  margin-bottom: 22px;
+}
+.scard {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius2);
+  padding: 20px;
+  position: relative; overflow: hidden;
+  transition: .25s;
+  cursor: default;
+}
+.scard::before {
+  content: ''; position: absolute;
+  top: 0; left: 0; right: 0; height: 3px;
+  border-radius: var(--radius2) var(--radius2) 0 0;
+}
+.scard::after {
+  content: ''; position: absolute;
+  inset: 0; opacity: 0;
+  transition: opacity .3s;
+  border-radius: var(--radius2);
+}
+.scard:hover::after { opacity: 1; }
+
+/* Variantes couleur */
+.scard.cyan   ::before { background: linear-gradient(90deg,var(--neon-cyan),#0077b6); }
+.scard.cyan:hover { border-color: rgba(0,229,255,.3); box-shadow: var(--neon-cyan-glow); }
+.scard.cyan   .sv { color: var(--neon-cyan); }
+
+.scard.green  ::before { background: linear-gradient(90deg,var(--neon-green),var(--neon-green2)); }
+.scard.green:hover { border-color: rgba(57,255,20,.3); box-shadow: var(--neon-green-glow); }
+.scard.green  .sv { color: var(--neon-green); }
+
+.scard.lime   ::before { background: linear-gradient(90deg,var(--neon-lime),var(--neon-lime2)); }
+.scard.lime:hover { border-color: rgba(198,255,0,.3); box-shadow: var(--neon-lime-glow); }
+.scard.lime   .sv { color: var(--neon-lime); }
+
+.scard.orange ::before { background: linear-gradient(90deg,var(--neon-orange),var(--neon-orange2)); }
+.scard.orange:hover { border-color: rgba(255,109,0,.3); box-shadow: var(--neon-orange-glow); }
+.scard.orange .sv { color: var(--neon-orange); }
+
+.scard.pink   ::before { background: linear-gradient(90deg,var(--neon-pink),var(--neon-pink2)); }
+.scard.pink:hover { border-color: rgba(255,45,120,.3); box-shadow: var(--neon-pink-glow); }
+.scard.pink   .sv { color: var(--neon-pink); }
+
+.scard.violet ::before { background: linear-gradient(90deg,var(--neon-violet),var(--neon-violet2)); }
+.scard.violet:hover { border-color: rgba(213,0,249,.3); box-shadow: var(--neon-violet-glow); }
+.scard.violet .sv { color: var(--neon-violet); }
+
+.scard.blue   ::before { background: linear-gradient(90deg,var(--neon-blue),var(--neon-blue2)); }
+.scard.blue:hover { border-color: rgba(41,121,255,.3); box-shadow: var(--neon-blue-glow); }
+.scard.blue   .sv { color: var(--neon-blue); }
+
+.sl { font-size: 11px; color: var(--text3); font-weight: 600; letter-spacing: .6px; text-transform: uppercase; margin-bottom: 10px; }
+.sv { font-family: 'Syne', sans-serif; font-size: 34px; font-weight: 800; line-height: 1; }
+.ss { font-size: 11px; color: var(--text3); margin-top: 6px; }
+
+/* ─── BUTTONS ────────────────────────────────────────────────────────────── */
+.btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-family: 'Syne', sans-serif;
+  font-size: 12.5px; font-weight: 700;
+  letter-spacing: .3px;
+  padding: 9px 18px; border-radius: 8px;
+  border: none; cursor: pointer;
+  transition: .2s; white-space: nowrap;
+}
+.btn:disabled { opacity: .35; cursor: not-allowed; pointer-events: none; }
+.btn-sm { padding: 6px 13px; font-size: 11.5px; }
+
+/* Cyan — Dashboard */
+.btn-cyan { background: linear-gradient(135deg,var(--neon-cyan),var(--neon-cyan2)); color: #020b14; font-weight: 800; }
+.btn-cyan:not(:disabled):hover { box-shadow: var(--neon-cyan-glow); transform: translateY(-1px); }
+
+/* Green — Queue */
+.btn-green { background: linear-gradient(135deg,var(--neon-green),var(--neon-green2)); color: #020b14; font-weight: 800; }
+.btn-green:not(:disabled):hover { box-shadow: var(--neon-green-glow); transform: translateY(-1px); }
+
+/* Lime — Validated */
+.btn-lime { background: linear-gradient(135deg,var(--neon-lime),var(--neon-lime2)); color: #020b14; font-weight: 800; }
+.btn-lime:not(:disabled):hover { box-shadow: var(--neon-lime-glow); transform: translateY(-1px); }
+
+/* Violet — Settings */
+.btn-violet { background: linear-gradient(135deg,var(--neon-violet),var(--neon-violet2)); color: #fff; font-weight: 800; }
+.btn-violet:not(:disabled):hover { box-shadow: var(--neon-violet-glow); transform: translateY(-1px); }
+
+/* Ghost */
+.btn-ghost { background: transparent; color: var(--text2); border: 1px solid var(--border2); }
+.btn-ghost:not(:disabled):hover { border-color: var(--neon-cyan); color: var(--neon-cyan); }
+
+/* Danger */
+.btn-danger { background: rgba(255,45,120,.1); color: var(--neon-pink); border: 1px solid rgba(255,45,120,.2); }
+.btn-danger:not(:disabled):hover { background: rgba(255,45,120,.18); box-shadow: var(--neon-pink-glow); }
+
+/* Orange outline */
+.btn-orange-o { background: rgba(255,109,0,.08); color: var(--neon-orange2); border: 1px solid rgba(255,109,0,.2); }
+.btn-orange-o:not(:disabled):hover { background: rgba(255,109,0,.16); box-shadow: var(--neon-orange-glow); }
+
+/* ─── LAYOUT GRIDS ───────────────────────────────────────────────────────── */
+.g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+.g3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+@media (max-width:920px) { .g2,.g3 { grid-template-columns:1fr; } }
+
+/* ─── SECTION HEADER ──────────────────────────────────────────────────────── */
+.sh {
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 10px; margin-bottom: 14px;
+}
+.sh-title { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700; color: var(--text); }
+.sh-count { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text3); margin-left: 8px; }
+.action-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 10px; margin-bottom: 16px;
+}
+.ab-left,.ab-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+/* ─── TEXTAREA ───────────────────────────────────────────────────────────── */
+.email-textarea {
+  width: 100%;
+  background: var(--bg2); border: 1px solid var(--border2);
+  color: var(--text);
+  font-family: 'JetBrains Mono', monospace; font-size: 12.5px; line-height: 1.65;
+  padding: 14px 16px; border-radius: var(--radius);
+  resize: vertical; min-height: 180px; max-height: 420px;
+  outline: none; transition: border-color .2s, box-shadow .2s;
+}
+.email-textarea:focus { border-color: var(--neon-green); box-shadow: 0 0 0 3px rgba(57,255,20,.08); }
+.email-textarea::placeholder { color: var(--text3); }
+.counter-bar { font-size: 12px; color: var(--text2); font-family: 'JetBrains Mono', monospace; margin: 8px 0; }
+.counter-bar .cn { color: var(--neon-green); font-weight: 600; }
+
+/* ─── EMAIL LIST ──────────────────────────────────────────────────────────── */
+.elist {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--radius); overflow: hidden;
+  max-height: 400px; overflow-y: auto;
+}
+.eitem {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 14px; border-bottom: 1px solid var(--border);
+  font-family: 'JetBrains Mono', monospace; font-size: 12px;
+  transition: background .15s;
+}
+.eitem:last-child { border-bottom: none; }
+.eitem:hover { background: var(--bg3); }
+.eitem .addr { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text); }
+.eitem .edate { font-size: 10.5px; color: var(--text3); margin-left: 12px; white-space: nowrap; }
+
+/* ─── BADGES ─────────────────────────────────────────────────────────────── */
+.badge {
+  display: inline-flex; align-items: center;
+  font-size: 10px; font-weight: 700; letter-spacing: .4px; text-transform: uppercase;
+  padding: 2px 8px; border-radius: 5px; margin-left: 8px; white-space: nowrap;
+}
+.b-valid   { background: rgba(57,255,20,.1);   color: var(--neon-green);  border: 1px solid rgba(57,255,20,.2); }
+.b-invalid { background: rgba(255,109,0,.1);   color: var(--neon-orange2);border: 1px solid rgba(255,109,0,.2); }
+.b-risky   { background: rgba(255,45,120,.1);  color: var(--neon-pink);   border: 1px solid rgba(255,45,120,.2); }
+.b-catchall{ background: rgba(213,0,249,.1);   color: var(--neon-violet); border: 1px solid rgba(213,0,249,.2); }
+.b-unknown { background: rgba(110,163,196,.08);color: var(--text2);       border: 1px solid var(--border2); }
+
+/* ─── EMPTY STATE ────────────────────────────────────────────────────────── */
+.empty {
+  text-align: center; padding: 44px 20px;
+  color: var(--text3); font-size: 13px;
+}
+.empty-icon { font-size: 32px; margin-bottom: 10px; opacity: .4; }
+
+/* ─── INFO BOX ───────────────────────────────────────────────────────────── */
+.infobox {
+  display: flex; gap: 10px;
+  background: rgba(0,229,255,.03); border: 1px solid rgba(0,229,255,.1);
+  border-radius: var(--radius); padding: 13px 16px;
+  font-size: 13px; color: var(--text2);
+  margin-bottom: 16px;
+}
+.infobox .ico { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+.infobox.green { background: rgba(57,255,20,.03); border-color: rgba(57,255,20,.1); }
+.infobox.violet { background: rgba(213,0,249,.03); border-color: rgba(213,0,249,.1); }
+.infobox.orange { background: rgba(255,109,0,.05); border-color: rgba(255,109,0,.15); color: var(--neon-orange2); }
+
+/* ─── FORM ───────────────────────────────────────────────────────────────── */
+.fg { margin-bottom: 16px; }
+.fg label { display: block; font-size: 11px; font-weight: 700; letter-spacing: .6px; text-transform: uppercase; color: var(--text2); margin-bottom: 7px; }
+.fg input, .fg select {
+  width: 100%; background: var(--bg2); border: 1px solid var(--border2);
+  color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 14px;
+  padding: 11px 14px; border-radius: var(--radius); outline: none;
+  transition: .2s; -webkit-appearance: none;
+}
+.fg input:focus, .fg select:focus { border-color: var(--neon-violet); box-shadow: 0 0 0 3px rgba(213,0,249,.08); }
+.fg input[type=password] { font-family: 'JetBrains Mono', monospace; font-size: 13px; }
+.fg select option { background: var(--card); }
+.fg small { font-size: 11px; color: var(--text3); margin-top: 5px; display: block; }
+
+/* ─── PROVIDER CARDS ─────────────────────────────────────────────────────── */
+.prov-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(175px, 1fr)); gap: 9px; margin-bottom: 18px; }
+.prov-card {
+  background: var(--bg3); border: 2px solid var(--border);
+  border-radius: var(--radius); padding: 13px;
+  cursor: pointer; transition: .2s;
+}
+.prov-card:hover { border-color: var(--border2); }
+.prov-card.sel-cyan   { border-color: var(--neon-cyan);   background: rgba(0,229,255,.04); }
+.prov-card.sel-green  { border-color: var(--neon-green);  background: rgba(57,255,20,.04); }
+.prov-card.sel-violet { border-color: var(--neon-violet); background: rgba(213,0,249,.04); }
+.prov-card.sel-orange { border-color: var(--neon-orange); background: rgba(255,109,0,.04); }
+.prov-card.sel-pink   { border-color: var(--neon-pink);   background: rgba(255,45,120,.04); }
+.prov-card.sel-lime   { border-color: var(--neon-lime);   background: rgba(198,255,0,.04); }
+.prov-card.sel-red    { border-color: #ff1744; background: rgba(255,23,68,.04); }
+.pn { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 3px; }
+.pq { font-size: 11px; font-family: 'JetBrains Mono', monospace; margin-bottom: 3px; }
+.pd { font-size: 10.5px; color: var(--text3); }
+.prov-card.sel-cyan   .pq { color: var(--neon-cyan); }
+.prov-card.sel-green  .pq { color: var(--neon-green); }
+.prov-card.sel-violet .pq { color: var(--neon-violet); }
+.prov-card.sel-orange .pq { color: var(--neon-orange2); }
+.prov-card.sel-pink   .pq { color: var(--neon-pink); }
+.prov-card.sel-lime   .pq { color: var(--neon-lime); }
+.prov-card.sel-red    .pq { color: #ff4f6a; }
+
+/* ─── CONNECTION RESULT ───────────────────────────────────────────────────── */
+.conn-res {
+  padding: 12px 16px; border-radius: var(--radius);
+  font-size: 13px; font-weight: 500; margin-top: 12px; display: none;
+}
+.conn-res.ok  { background: rgba(57,255,20,.06); border: 1px solid rgba(57,255,20,.2); color: var(--neon-green); display:block; }
+.conn-res.err { background: rgba(255,45,120,.06); border: 1px solid rgba(255,45,120,.2); color: var(--neon-pink); display:block; }
+
+/* ─── LOGS ───────────────────────────────────────────────────────────────── */
+.log-item {
+  display: grid; grid-template-columns: 130px 68px 1fr;
+  align-items: start; gap: 12px;
+  padding: 10px 0; border-bottom: 1px solid var(--border);
+  font-size: 12.5px;
+}
+.log-item:last-child { border-bottom: none; }
+.log-ts { color: var(--text3); font-family: 'JetBrains Mono', monospace; font-size: 10.5px; padding-top: 2px; }
+.log-type {
+  font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 700;
+  padding: 3px 7px; border-radius: 4px; text-align: center;
+  letter-spacing: .4px; text-transform: uppercase; justify-self: start;
+  white-space: nowrap;
+}
+.lt-process { background: rgba(0,229,255,.1);   color: var(--neon-cyan);   border: 1px solid rgba(0,229,255,.2); }
+.lt-info    { background: rgba(110,163,196,.07);color: var(--text2);       border: 1px solid var(--border); }
+.lt-error   { background: rgba(255,45,120,.08); color: var(--neon-pink);   border: 1px solid rgba(255,45,120,.2); }
+.lt-warn    { background: rgba(255,109,0,.08);  color: var(--neon-orange2);border: 1px solid rgba(255,109,0,.2); }
+.lt-add     { background: rgba(57,255,20,.07);  color: var(--neon-green);  border: 1px solid rgba(57,255,20,.2); }
+.lt-config  { background: rgba(213,0,249,.08);  color: var(--neon-violet); border: 1px solid rgba(213,0,249,.2); }
+.lt-test    { background: rgba(41,121,255,.08); color: var(--neon-blue);   border: 1px solid rgba(41,121,255,.2); }
+.lt-clear   { background: rgba(255,109,0,.06);  color: var(--neon-orange2);border: 1px solid rgba(255,109,0,.15); }
+.log-msg { color: var(--text); }
+.log-stats-mini { font-size: 10.5px; color: var(--text3); font-family: 'JetBrains Mono', monospace; margin-top: 3px; }
+
+/* ─── PROGRESS BAR ───────────────────────────────────────────────────────── */
+.progwrap { background: var(--bg3); border-radius: 3px; height: 6px; overflow: hidden; margin-top: 8px; }
+.progbar  { height: 100%; background: linear-gradient(90deg,var(--neon-cyan),var(--neon-violet)); border-radius: 3px; transition: width .6s; }
+
+/* ─── PAGINATION ──────────────────────────────────────────────────────────── */
+.pagi { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 12px; }
+.pagi .pi { font-size: 12px; color: var(--text3); font-family: 'JetBrains Mono', monospace; }
+.pbtn {
+  background: var(--bg3); border: 1px solid var(--border); color: var(--text2);
+  font-family: 'JetBrains Mono', monospace; font-size: 12px;
+  padding: 5px 13px; border-radius: 6px; cursor: pointer; transition: .2s;
+}
+.pbtn:hover:not(:disabled) { border-color: var(--neon-cyan); color: var(--neon-cyan); }
+.pbtn:disabled { opacity: .25; cursor: not-allowed; }
+
+/* ─── SPINNER ────────────────────────────────────────────────────────────── */
+.spin {
+  display: inline-block; width: 14px; height: 14px;
+  border: 2px solid rgba(0,229,255,.15); border-top-color: var(--neon-cyan);
+  border-radius: 50%; animation: sp .7s linear infinite;
+}
+@keyframes sp { to { transform: rotate(360deg); } }
+
+/* ─── DIVIDER ────────────────────────────────────────────────────────────── */
+hr { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+
+/* ─── SYSTEM INFO ROWS ───────────────────────────────────────────────────── */
+.info-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 11px 0; border-bottom: 1px solid var(--border);
+}
+.info-row:last-child { border-bottom: none; }
+.ir-label { font-size: 13px; color: var(--text2); }
+.ir-val   { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text3); }
+
+/* ─── TOAST ──────────────────────────────────────────────────────────────── */
+#toast {
+  position: fixed; bottom: 22px; right: 22px; z-index: 999;
+  background: var(--card); border: 1px solid var(--border2);
+  border-radius: 10px; padding: 12px 20px;
+  font-size: 13px; font-weight: 500;
+  box-shadow: 0 10px 40px rgba(0,0,0,.5);
+  transform: translateY(80px); opacity: 0;
+  transition: .3s cubic-bezier(.34,1.56,.64,1);
+  max-width: 380px;
+  display: flex; align-items: center; gap: 10px;
+}
+#toast.show { transform: none; opacity: 1; }
+#toast.ok   { border-color: rgba(57,255,20,.3);  color: var(--neon-green); }
+#toast.err  { border-color: rgba(255,45,120,.3); color: var(--neon-pink); }
+#toast.info { border-color: rgba(0,229,255,.2);  color: var(--neon-cyan); }
+
+/* ─── AMBIENT GLOW BG ────────────────────────────────────────────────────── */
+.glow-orb {
+  position: fixed; border-radius: 50%; pointer-events: none; z-index: 0;
+  filter: blur(80px); opacity: .15;
+}
+.go1 { width:500px;height:500px;top:-150px;right:-100px; background:var(--neon-cyan); }
+.go2 { width:400px;height:400px;bottom:-150px;left:-100px; background:var(--neon-violet); }
+
+/* ─── RESPONSIVE ──────────────────────────────────────────────────────────── */
+@media (max-width:640px) {
+  main { padding: 12px; }
+  .stats-grid { grid-template-columns: repeat(2,1fr); }
+  .sv { font-size: 26px; }
+  header { padding: 0 14px; }
+  .tab-btn { padding: 0 10px; font-size: 11.5px; }
+  .logo { font-size: 15px; }
+}
+
+/* Dashboard section */
+#tab-dashboard .card-title.c-cyan .ct-dot { background: var(--neon-cyan); box-shadow: 0 0 8px var(--neon-cyan); }
+/* Queue section */
+#tab-queue .card-title.c-green .ct-dot { background: var(--neon-green); box-shadow: 0 0 8px var(--neon-green); }
+/* Validated section */
+#tab-validated .card-title.c-lime .ct-dot { background: var(--neon-lime); box-shadow: 0 0 8px var(--neon-lime); }
+/* Rejected section */
+#tab-rejected .card-title.c-orange .ct-dot { background: var(--neon-orange2); box-shadow: 0 0 8px var(--neon-orange2); }
+/* Risky section */
+#tab-risky .card-title.c-pink .ct-dot { background: var(--neon-pink); box-shadow: 0 0 8px var(--neon-pink); }
+/* Settings section */
+#tab-settings .card-title.c-violet .ct-dot { background: var(--neon-violet); box-shadow: 0 0 8px var(--neon-violet); }
+/* Logs section */
+#tab-logs .card-title.c-blue .ct-dot { background: var(--neon-blue); box-shadow: 0 0 8px var(--neon-blue); }
+</style>
+</head>
+<body>
+
+<div class="glow-orb go1"></div>
+<div class="glow-orb go2"></div>
+
+<!-- ═══ HEADER ═════════════════════════════════════════════════════════════ -->
+<header>
+  <div style="display:flex;align-items:center;gap:12px">
+    <div>
+      <span class="logo">PGI • CleanMail' Pro</span>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="status-pill">
+      <div class="s-dot" id="s-dot"></div>
+      <span id="s-txt" style="font-size:11px">Connexion…</span>
+    </div>
+    <button class="btn-hdr" onclick="refreshAll()">↻ Actualiser</button>
+    <button class="btn-hdr" onclick="switchTab('settings')">⚙ Config API</button>
+  </div>
+</header>
+
+<!-- ═══ TABS ════════════════════════════════════════════════════════════════ -->
+<div class="tabs-bar">
+  <button class="tab-btn active" data-tab="dashboard" onclick="switchTab('dashboard')">
+    <span class="tab-icon">◈</span> Dashboard
+  </button>
+  <button class="tab-btn" data-tab="queue" onclick="switchTab('queue')">
+    <span class="tab-icon">▸</span> Emails à nettoyer
+    <span class="tab-badge" id="b-queue">–</span>
+  </button>
+  <button class="tab-btn" data-tab="validated" onclick="switchTab('validated')">
+    <span class="tab-icon">✓</span> Emails nettoyés
+    <span class="tab-badge" id="b-validated">–</span>
+  </button>
+  <button class="tab-btn" data-tab="rejected" onclick="switchTab('rejected')">
+    <span class="tab-icon">✕</span> Emails invalides
+    <span class="tab-badge" id="b-rejected">–</span>
+  </button>
+  <button class="tab-btn" data-tab="risky" onclick="switchTab('risky')">
+    <span class="tab-icon">⚠</span> Emails risqués
+    <span class="tab-badge" id="b-risky">–</span>
+  </button>
+  <button class="tab-btn" data-tab="settings" onclick="switchTab('settings')">
+    <span class="tab-icon">⚙</span> Paramètres API
+  </button>
+  <button class="tab-btn" data-tab="logs" onclick="switchTab('logs')">
+    <span class="tab-icon">≡</span> Historique
+  </button>
+</div>
+
+<!-- ═══ MAIN ════════════════════════════════════════════════════════════════ -->
+<main>
+
+<!-- ─────────────────────────────────────────────────────────────────────────
+     DASHBOARD
+────────────────────────────────────────────────────────────────────────── -->
+<div class="tab-panel active" id="tab-dashboard">
+
+  <div class="stats-grid">
+    <div class="scard cyan">
+      <div class="sl">À nettoyer</div>
+      <div class="sv" id="s-queue">–</div>
+      <div class="ss">emails en attente</div>
+    </div>
+    <div class="scard lime">
+      <div class="sl">Nettoyés</div>
+      <div class="sv" id="s-validated">–</div>
+      <div class="ss">emails propres</div>
+    </div>
+    <div class="scard orange">
+      <div class="sl">Invalides</div>
+      <div class="sv" id="s-rejected">–</div>
+      <div class="ss">adresses rejetées</div>
+    </div>
+    <div class="scard pink">
+      <div class="sl">Risqués</div>
+      <div class="sv" id="s-risky">–</div>
+      <div class="ss">catch-all, spam…</div>
+    </div>
+    <div class="scard violet">
+      <div class="sl">Quota actif</div>
+      <div class="sv" id="s-quota">–</div>
+      <div class="ss" id="s-prov">emails/jour</div>
+    </div>
+    <div class="scard green">
+      <div class="sl">Dernier cycle</div>
+      <div class="sv" id="s-cycle">–</div>
+      <div class="ss">emails traités</div>
+    </div>
+  </div>
+
+  <div class="g2">
+    <div class="card">
+      <div class="card-title c-cyan"><span class="ct-dot"></span>État du système</div>
+      <div class="info-row">
+        <span class="ir-label">Worker Cloudflare</span>
+        <span class="ir-val" id="sys-worker" style="color:var(--text3)">–</span>
+      </div>
+      <div class="info-row">
+        <span class="ir-label">Clé API</span>
+        <span class="ir-val" id="sys-apikey">–</span>
+      </div>
+      <div class="info-row">
+        <span class="ir-label">Fournisseur actif</span>
+        <span class="ir-val" id="sys-prov" style="color:var(--neon-cyan)">–</span>
+      </div>
+      <div class="info-row">
+        <span class="ir-label">Dernier traitement</span>
+        <span class="ir-val" id="sys-lastrun">Jamais</span>
+      </div>
+      <div class="info-row">
+        <span class="ir-label">Total traités (tous cycles)</span>
+        <span class="ir-val" id="sys-total" style="color:var(--neon-cyan)">–</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title c-cyan"><span class="ct-dot"></span>Progression & traitement</div>
+      <p id="d-prog-txt" style="color:var(--text2);font-size:13px;margin-bottom:12px">Chargement…</p>
+      <div class="progwrap"><div class="progbar" id="d-prog-bar" style="width:0%"></div></div>
+      <div style="margin-top:20px;display:flex;flex-direction:column;gap:10px">
+        <button class="btn btn-cyan" id="btn-run" onclick="manualRun()" style="justify-content:center;width:100%">
+          ▶ Lancer le traitement maintenant
+        </button>
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:12px;font-size:12px;color:var(--text3)">
+          <div>⏰ Cron automatique : <strong style="color:var(--text2)">chaque nuit à 2h00 UTC</strong></div>
+          <div style="margin-top:5px">→ Aucune intervention manuelle requise</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ─────────────────────────────────────────────────────────────────────────
+     EMAILS À NETTOYER
+────────────────────────────────────────────────────────────────────────── -->
+<div class="tab-panel" id="tab-queue">
+
+  <div class="g2" style="margin-bottom:18px">
+
+    <div class="card">
+      <div class="card-title c-green"><span class="ct-dot"></span>Ajouter des emails à nettoyer</div>
+      <div class="infobox green">
+        <span class="ico">+</span>
+        <span>Collez vos emails — un par ligne ou séparés par virgules. Les emails déjà nettoyés et les doublons sont ignorés automatiquement. L'ajout est <strong>cumulatif</strong> : vos anciens emails restent en attente.</span>
+      </div>
+      <textarea class="email-textarea" id="emails-input"
+        placeholder="user@exemple.com&#10;contact@societe.fr&#10;client@domaine.com&#10;..."
+        oninput="updateCounter()" onpaste="setTimeout(updateCounter,10)"></textarea>
+      <div class="counter-bar" id="e-counter"></div>
+      <div style="display:flex;gap:8px;margin-top:4px">
+        <button class="btn btn-green" style="flex:1;justify-content:center" onclick="addToQueue()">
+          + Ajouter à la liste
+        </button>
+        <button class="btn btn-ghost" onclick="clearInput()">Effacer</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title c-green"><span class="ct-dot"></span>File d'emails à nettoyer</div>
+      <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:16px">
+        <div>
+          <div style="font-family:'Syne',sans-serif;font-size:36px;font-weight:800;color:var(--neon-green);line-height:1" id="q-count-big">0</div>
+          <div style="font-size:13px;color:var(--text3);margin-top:4px">emails en attente de nettoyage</div>
+        </div>
+        <button class="btn btn-danger btn-sm" onclick="clearQueue()">🗑 Vider</button>
+      </div>
+      <button class="btn btn-green" style="width:100%;justify-content:center;margin-bottom:14px" onclick="manualRun()">
+        ▶ Lancer maintenant
+      </button>
+      <div style="background:var(--bg2);border:1px solid rgba(57,255,20,.15);border-radius:8px;padding:12px;font-size:12px;">
+        <div style="color:var(--neon-green);font-weight:700;margin-bottom:6px">⚡ Automatisation active</div>
+        <div style="color:var(--text2)">Chaque nuit à <strong>2h00 UTC</strong>, le système nettoie automatiquement les prochains emails de la liste — sans aucune intervention de votre part.</div>
+        <div style="margin-top:8px;color:var(--text3)">📊 Quota : <strong id="q-quota" style="color:var(--neon-green)">–</strong> emails/jour · Provider : <strong id="q-prov" style="color:var(--text2)">–</strong></div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="card">
+    <div class="sh">
+      <div><span class="sh-title">Emails en attente de nettoyage</span><span class="sh-count" id="q-list-info"></span></div>
+      <button class="btn btn-ghost btn-sm" onclick="loadQueue(1)">↻</button>
+    </div>
+    <div id="queue-list"></div>
+    <div class="pagi" id="queue-pagi"></div>
+  </div>
+
+</div>
+
+<!-- ─────────────────────────────────────────────────────────────────────────
+     EMAILS NETTOYÉS
+────────────────────────────────────────────────────────────────────────── -->
+<div class="tab-panel" id="tab-validated">
+
+  <!-- Barre d'action supérieure -->
+  <div class="card" style="margin-bottom:18px;border-color:rgba(198,255,0,.15);">
+    <div class="action-bar">
+      <div class="ab-left">
+        <div>
+          <div style="font-family:'Syne',sans-serif;font-size:38px;font-weight:800;color:var(--neon-lime);line-height:1;text-shadow:0 0 20px rgba(198,255,0,.3)" id="v-count-big">0</div>
+          <div style="font-size:13px;color:var(--text3);margin-top:5px">emails nettoyés · base cumulative · sans doublons</div>
+        </div>
+      </div>
+      <div class="ab-right">
+        <button class="btn btn-lime btn-sm" onclick="exportV('txt')">⬇ Exporter TXT</button>
+        <button class="btn btn-lime btn-sm" onclick="exportV('csv')">⬇ Exporter CSV</button>
+        <button class="btn btn-danger btn-sm" onclick="clearValidated()">🗑 Vider la base</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ZONE DE COPIE RAPIDE - grande et visible -->
+  <div class="card" style="margin-bottom:18px;border-color:rgba(198,255,0,.2);background:linear-gradient(135deg,var(--card),rgba(198,255,0,.02));">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:var(--neon-lime)">
+        ⬡ Copie rapide — tous les emails nettoyés
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <span id="copy-status" style="font-size:12px;color:var(--neon-lime);opacity:0;transition:.3s">✓ Copié !</span>
+        <button class="btn btn-lime" onclick="copyValidatedBig()" id="btn-copy-big" style="font-size:14px;padding:10px 22px;">
+          📋 Copier tout
+        </button>
+      </div>
+    </div>
+    <div style="position:relative">
+      <textarea id="validated-copy-area"
+        readonly
+        placeholder="Les emails nettoyés apparaîtront ici automatiquement…"
+        style="
+          width:100%;
+          min-height:160px;max-height:320px;
+          background:var(--bg2);
+          border:2px solid rgba(198,255,0,.25);
+          color:var(--neon-lime);
+          font-family:'JetBrains Mono',monospace;
+          font-size:12px;line-height:1.7;
+          padding:14px 16px;
+          border-radius:10px;
+          resize:vertical;
+          outline:none;
+          cursor:text;
+          box-shadow:inset 0 0 30px rgba(198,255,0,.03);
+        "
+        onclick="this.select()"
+      ></textarea>
+      <div style="position:absolute;bottom:10px;right:12px;font-size:10.5px;color:var(--text3);pointer-events:none" id="copy-area-count"></div>
+    </div>
+    <div style="font-size:11px;color:var(--text3);margin-top:8px">
+      💡 Cliquez dans la zone ci-dessus pour tout sélectionner, ou utilisez le bouton "Copier tout"
+    </div>
+  </div>
+
+  <!-- Liste paginée -->
+  <div class="card">
+    <div class="sh">
+      <div>
+        <span class="sh-title" style="color:var(--neon-lime)">✓ Liste complète des emails nettoyés</span>
+        <span class="sh-count" id="v-list-info"></span>
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="loadValidated(1)">↻ Recharger</button>
+    </div>
+    <div id="validated-list"></div>
+    <div class="pagi" id="validated-pagi"></div>
+  </div>
+
+</div>
+
+<!-- ─────────────────────────────────────────────────────────────────────────
+     EMAILS INVALIDES
+────────────────────────────────────────────────────────────────────────── -->
+<div class="tab-panel" id="tab-rejected">
+
+  <div class="stats-grid" style="grid-template-columns:repeat(auto-fill,minmax(220px,1fr));margin-bottom:18px">
+    <div class="scard orange">
+      <div class="sl">Emails invalides</div>
+      <div class="sv" id="rej-cnt">–</div>
+      <div class="ss">adresses non délivrables</div>
+    </div>
+    <div class="scard blue" style="font-size:12px">
+      <div class="sl">Causes courantes</div>
+      <div style="color:var(--neon-blue2);font-size:12px;line-height:1.7;margin-top:4px">
+        MX manquant · Domaine inexistant · Adresse inconnue · Boîte supprimée
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="sh">
+      <div><span class="sh-title" style="color:var(--neon-orange2)">✕ Emails invalides (non délivrables)</span><span class="sh-count" id="rej-info"></span></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-ghost btn-sm" onclick="loadRejected(1)">↻</button>
+        <button class="btn btn-danger btn-sm" onclick="clearList('rejected')">🗑 Vider</button>
+      </div>
+    </div>
+    <div id="rejected-list"></div>
+    <div class="pagi" id="rejected-pagi"></div>
+  </div>
+
+</div>
+
+<!-- ─────────────────────────────────────────────────────────────────────────
+     EMAILS RISQUÉS
+────────────────────────────────────────────────────────────────────────── -->
+<div class="tab-panel" id="tab-risky">
+
+  <div class="stats-grid" style="grid-template-columns:repeat(auto-fill,minmax(220px,1fr));margin-bottom:18px">
+    <div class="scard pink">
+      <div class="sl">Emails risqués</div>
+      <div class="sv" id="risk-cnt">–</div>
+      <div class="ss">catch-all, disposable, spam…</div>
+    </div>
+    <div class="scard violet" style="font-size:12px">
+      <div class="sl">Types détectés</div>
+      <div style="color:var(--neon-violet2);font-size:12px;line-height:1.7;margin-top:4px">
+        Catch-all · Disposable · Spamtrap · Role-based · Inconnu
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="sh">
+      <div><span class="sh-title" style="color:var(--neon-pink)">⚠ Emails risqués</span><span class="sh-count" id="risk-info"></span></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-ghost btn-sm" onclick="loadRisky(1)">↻</button>
+        <button class="btn btn-danger btn-sm" onclick="clearList('risky')">🗑 Vider</button>
+      </div>
+    </div>
+    <div id="risky-list"></div>
+    <div class="pagi" id="risky-pagi"></div>
+  </div>
+
+</div>
+
+<!-- ─────────────────────────────────────────────────────────────────────────
+     PARAMÈTRES API
+────────────────────────────────────────────────────────────────────────── -->
+<div class="tab-panel" id="tab-settings">
+
+  <div class="g2">
+
+    <!-- Colonne gauche -->
+    <div style="display:flex;flex-direction:column;gap:18px">
+
+      <div class="card">
+        <div class="card-title c-violet"><span class="ct-dot"></span>Fournisseur API</div>
+        <div class="prov-grid" id="prov-grid"></div>
+        <div class="fg">
+          <label>Quota journalier personnalisé (optionnel)</label>
+          <input type="number" id="cfg-quota" placeholder="Laisser vide = quota par défaut du fournisseur" min="1" max="50000">
+          <small>Surcharge le quota par défaut du fournisseur sélectionné</small>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title c-violet"><span class="ct-dot"></span>Clé API</div>
+        <div class="infobox violet">
+          <span class="ico">🔐</span>
+          <span>La clé est stockée côté Worker Cloudflare uniquement. Elle n'est jamais envoyée au navigateur ni loguée.</span>
+        </div>
+        <div class="fg">
+          <label>Nouvelle clé API à enregistrer</label>
+          <input type="password" id="cfg-apikey" placeholder="Collez votre clé API ici…" autocomplete="off">
+          <small id="apikey-info">Clé actuellement en place : chargement…</small>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-violet" onclick="saveSettings()" style="flex:1;justify-content:center">
+            💾 Enregistrer les paramètres
+          </button>
+          <button class="btn btn-ghost" onclick="testConn()">⚡ Tester</button>
+        </div>
+        <div class="conn-res" id="conn-res"></div>
+      </div>
+
+    </div>
+
+    <!-- Colonne droite -->
+    <div style="display:flex;flex-direction:column;gap:18px">
+
+      <div class="card">
+        <div class="card-title c-violet"><span class="ct-dot"></span>Plans gratuits des fournisseurs</div>
+        <div id="free-plans-list" style="display:flex;flex-direction:column;gap:8px"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title c-violet"><span class="ct-dot"></span>Note sur Verifalia</div>
+        <div class="infobox violet">
+          <span class="ico">ℹ</span>
+          <div>
+            <div style="margin-bottom:8px">Pour Verifalia, la clé doit être au format :</div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:13px;background:var(--bg);padding:8px 12px;border-radius:6px;color:var(--neon-violet)">AccountSID:MotDePasse</div>
+            <div style="margin-top:8px;font-size:12px;color:var(--text3)">Séparez les deux parties par deux-points ":".<br>Trouvez le SID dans votre dashboard Verifalia → API Settings.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title c-violet"><span class="ct-dot"></span>Config Worker</div>
+        <div class="info-row">
+          <span class="ir-label">URL Worker</span>
+          <span id="w-url-disp" style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text3);max-width:200px;overflow:hidden;text-overflow:ellipsis"></span>
+        </div>
+        <div class="info-row">
+          <span class="ir-label">Auth Token</span>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text3)">••••••••••••</span>
+        </div>
+        <div class="info-row">
+          <span class="ir-label">Cron automatique</span>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--neon-green)">2h00 UTC / jour</span>
+        </div>
+        <small style="color:var(--text3);font-size:11px;margin-top:10px;display:block">Pour modifier l'URL ou le token, éditez les deux lignes const en haut du fichier index.html.</small>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- ─────────────────────────────────────────────────────────────────────────
+     HISTORIQUE / LOGS
+────────────────────────────────────────────────────────────────────────── -->
+<div class="tab-panel" id="tab-logs">
+
+  <div class="card">
+    <div class="action-bar">
+      <div>
+        <span class="sh-title" style="color:var(--neon-blue)">≡ Journal des opérations</span>
+        <span style="font-size:12px;color:var(--text3);margin-left:10px">200 dernières entrées</span>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-ghost btn-sm" onclick="loadLogs()">↻ Actualiser</button>
+        <button class="btn btn-danger btn-sm" onclick="clearLogs()">🗑 Vider</button>
+      </div>
+    </div>
+    <div id="logs-list"></div>
+  </div>
+
+</div>
+
+</main>
+<div id="toast"></div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     JAVASCRIPT
+══════════════════════════════════════════════════════════════════════════ -->
+<script>
+'use strict';
+
+// ─── API CALL ─────────────────────────────────────────────────────────────
+async function api(path, method = 'GET', body = null) {
+  const opts = {
+    method,
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${AUTH_TOKEN}`,
+    },
+  };
+  if (body) opts.body = JSON.stringify(body);
+  const res = await fetch(WORKER_URL + path, opts);
+  if (!res.ok) {
+    const e = await res.json().catch(() => ({ error: `HTTP ${res.status}` }));
+    throw new Error(e.error || `HTTP ${res.status}`);
+  }
+  return res.json();
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  // Afficher l'URL worker dans la section settings
+  const el = document.getElementById('w-url-disp');
+  if (el) el.textContent = WORKER_URL.replace('https://', '');
+
+  // Vérifier config
+  if (!WORKER_URL || WORKER_URL.includes('VOTRE-COMPTE')) {
+    toast('⚠ Modifiez WORKER_URL et AUTH_TOKEN dans le fichier HTML avant utilisation', 'err');
+    return;
+  }
+
+  ping();
+  loadStats();
+  loadSettings();
+  loadQueue(1);
+
+  // Auto-refresh toutes les 30s
+  setInterval(() => { loadStats(); ping(); }, 30000);
+});
+
+// ─── PING ──────────────────────────────────────────────────────────────────
+async function ping() {
+  const dot = document.getElementById('s-dot');
+  const txt = document.getElementById('s-txt');
+  try {
+    await fetch(WORKER_URL + '/api/ping', { signal: AbortSignal.timeout(5000) });
+    dot.className = 's-dot ok';
+    txt.textContent = 'En ligne';
+    txt.style.color = 'var(--neon-green)';
+    if (document.getElementById('sys-worker')) {
+      document.getElementById('sys-worker').textContent = '✓ En ligne';
+      document.getElementById('sys-worker').style.color = 'var(--neon-green)';
+    }
+  } catch {
+    dot.className = 's-dot err';
+    txt.textContent = 'Hors ligne';
+    txt.style.color = 'var(--neon-pink)';
+    if (document.getElementById('sys-worker')) {
+      document.getElementById('sys-worker').textContent = '✗ Hors ligne';
+      document.getElementById('sys-worker').style.color = 'var(--neon-pink)';
+    }
+  }
+}
+
+// ─── STATS ─────────────────────────────────────────────────────────────────
+async function loadStats() {
+  try {
+    const d = await api('/api/stats');
+    set('s-queue',     fmt(d.queueCount));
+    set('s-validated', fmt(d.validatedCount));
+    set('s-rejected',  fmt(d.rejectedCount));
+    set('s-risky',     fmt(d.riskyCount));
+    set('s-quota',     fmt(d.quota));
+    set('s-prov',      d.providerName || '–');
+    set('s-cycle',     fmt(d.lastCycleCount));
+    set('sys-prov',    d.providerName || '–');
+    set('sys-total',   fmt(d.totalProcessed));
+    set('sys-lastrun', d.lastRun ? fmtDate(d.lastRun) : 'Jamais');
+    set('sys-apikey',  d.hasApiKey ? '✓ Configurée' : '✗ Manquante');
+    el('sys-apikey').style.color = d.hasApiKey ? 'var(--neon-green)' : 'var(--neon-pink)';
+    set('q-count-big', fmt(d.queueCount));
+    set('v-count-big', fmt(d.validatedCount));
+    set('rej-cnt',     fmt(d.rejectedCount));
+    set('risk-cnt',    fmt(d.riskyCount));
+    set('q-quota',     `${fmt(d.quota)}`);
+    set('q-prov',      d.providerName || '–');
+    badge('b-queue',     d.queueCount);
+    badge('b-validated', d.validatedCount);
+    badge('b-rejected',  d.rejectedCount);
+    badge('b-risky',     d.riskyCount);
+
+    // Progress
+    const done    = d.validatedCount + d.rejectedCount + d.riskyCount;
+    const total   = done + d.queueCount;
+    const pct     = total > 0 ? Math.round(done / total * 100) : 0;
+    set('d-prog-txt', `${fmt(done)} traités · ${fmt(d.queueCount)} en attente · ${pct}% de progression globale`);
+    const bar = el('d-prog-bar');
+    if (bar) bar.style.width = pct + '%';
+  } catch (e) {
+    console.warn('loadStats:', e.message);
+  }
+}
+
+// ─── QUEUE ─────────────────────────────────────────────────────────────────
+async function loadQueue(page = 1) {
+  const c = el('queue-list');
+  c.innerHTML = loading();
+  try {
+    const d = await api(`/api/queue?page=${page}`);
+    set('q-list-info', `— ${fmt(d.total)} email${d.total !== 1 ? 's' : ''}`);
+    c.innerHTML = d.emails.length === 0
+      ? empty('📭', 'File vide', 'Ajoutez des emails dans le formulaire ci-dessus')
+      : d.emails.map(e => `<div class="eitem"><span class="addr">${esc(e)}</span></div>`).join('');
+    renderPagi('queue-pagi', page, d.pages, loadQueue);
+  } catch(e) { c.innerHTML = errBox(e.message); }
+}
+
+async function addToQueue() {
+  const raw = el('emails-input').value;
+  if (!raw.trim()) { toast('Saisissez des emails', 'err'); return; }
+  const btn = event.target;
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spin"></span> Ajout…';
+  try {
+    const d = await api('/api/queue', 'POST', { text: raw });
+    if (d.added === 0) {
+      toast(`Aucun email ajouté — ${d.skippedDup} doublons, ${d.skippedValid} déjà validés`, 'err');
+    } else {
+      toast(`✓ ${fmt(d.added)} email${d.added>1?'s':''} ajouté${d.added>1?'s':''} — File totale : ${fmt(d.total)}`, 'ok');
+      el('emails-input').value = ''; updateCounter();
+      loadQueue(1); loadStats();
+    }
+  } catch(e) { toast(e.message, 'err'); }
+  finally { btn.disabled = false; btn.innerHTML = '+ Ajouter à la file'; }
+}
+
+async function clearQueue() {
+  if (!confirm('Vider toute la file d\'attente ? Irréversible.')) return;
+  try {
+    await api('/api/queue', 'DELETE');
+    toast('File vidée', 'ok'); loadQueue(1); loadStats();
+  } catch(e) { toast(e.message, 'err'); }
+}
+
+function clearInput() {
+  el('emails-input').value = '';
+  updateCounter();
+}
+
+// ─── VALIDATED ─────────────────────────────────────────────────────────────
+async function loadValidated(page = 1) {
+  const c = el('validated-list');
+  c.innerHTML = loading();
+  try {
+    const d = await api(`/api/validated?page=${page}`);
+    set('v-list-info', `— ${fmt(d.total)} email${d.total !== 1 ? 's' : ''}`);
+    c.innerHTML = d.emails.length === 0
+      ? empty('✓', 'Aucun email nettoyé pour l\'instant', 'Les emails propres apparaîtront ici automatiquement après chaque cycle de nettoyage')
+      : d.emails.map(e => `<div class="eitem"><span class="addr">${esc(e)}</span><span class="badge b-valid">nettoyé</span></div>`).join('');
+    renderPagi('validated-pagi', page, d.pages, loadValidated);
+
+    // Remplir la zone de copie rapide (toujours toute la liste)
+    if (page === 1) fillCopyArea(d);
+  } catch(e) { c.innerHTML = errBox(e.message); }
+}
+
+async function fillCopyArea(firstPage) {
+  const area  = el('validated-copy-area');
+  const count = el('copy-area-count');
+  if (!area) return;
+  try {
+    let all = [...(firstPage?.emails || [])];
+    if (firstPage && firstPage.pages > 1) {
+      for (let p = 2; p <= firstPage.pages; p++) {
+        const dp = await api(`/api/validated?page=${p}`);
+        all.push(...dp.emails);
+      }
+    }
+    area.value = all.join('\n');
+    if (count) count.textContent = all.length > 0 ? `${fmt(all.length)} emails` : '';
+  } catch {}
+}
+
+async function copyValidatedBig() {
+  const area = el('validated-copy-area');
+  if (!area || !area.value.trim()) {
+    // Charger si vide
+    try {
+      const d0 = await api('/api/validated?page=1');
+      let all = [...d0.emails];
+      for (let p = 2; p <= d0.pages; p++) {
+        const dp = await api(`/api/validated?page=${p}`);
+        all.push(...dp.emails);
+      }
+      area.value = all.join('\n');
+    } catch(e) { toast(e.message, 'err'); return; }
+  }
+  try {
+    await navigator.clipboard.writeText(area.value);
+    const n = area.value.split('\n').filter(Boolean).length;
+    toast(`✓ ${fmt(n)} emails copiés dans le presse-papiers`, 'ok');
+    const status = el('copy-status');
+    if (status) { status.style.opacity = '1'; setTimeout(() => status.style.opacity = '0', 2500); }
+  } catch {
+    // Fallback : sélectionner le texte
+    area.select();
+    document.execCommand('copy');
+    toast('✓ Emails copiés', 'ok');
+  }
+}
+
+// Gardé pour compatibilité
+async function copyValidated() { copyValidatedBig(); }
+
+async function exportV(format) {
+  try {
+    const res = await fetch(`${WORKER_URL}/api/validated?format=${format}`, {
+      headers: { 'Authorization': `Bearer ${AUTH_TOKEN}` }
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const blob = await res.blob();
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `emails_valides.${format}`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+    toast(`Export ${format.toUpperCase()} téléchargé`, 'ok');
+  } catch(e) { toast(e.message, 'err'); }
+}
+
+async function clearValidated() {
+  if (!confirm('Vider toute la base emails nettoyés ? Irréversible.')) return;
+  try {
+    await api('/api/validated', 'DELETE');
+    toast('Base emails nettoyés vidée', 'ok');
+    const area = el('validated-copy-area');
+    if (area) area.value = '';
+    const count = el('copy-area-count');
+    if (count) count.textContent = '';
+    set('v-count-big', '0');
+    loadValidated(1); loadStats();
+  } catch(e) { toast(e.message, 'err'); }
+}
+
+// ─── REJECTED ──────────────────────────────────────────────────────────────
+async function loadRejected(page = 1) {
+  const c = el('rejected-list');
+  c.innerHTML = loading();
+  try {
+    const d = await api(`/api/rejected?page=${page}`);
+    set('rej-info', `— ${fmt(d.total)} email${d.total !== 1 ? 's' : ''}`);
+    c.innerHTML = d.items.length === 0
+      ? empty('✓', 'Aucun invalide', '')
+      : d.items.map(i => `<div class="eitem"><span class="addr">${esc(i.email)}</span><span class="edate">${i.date ? fmtDate(i.date) : ''}</span><span class="badge b-invalid">${esc(i.reason||'invalide')}</span></div>`).join('');
+    renderPagi('rejected-pagi', page, d.pages, loadRejected);
+  } catch(e) { c.innerHTML = errBox(e.message); }
+}
+
+// ─── RISKY ─────────────────────────────────────────────────────────────────
+async function loadRisky(page = 1) {
+  const c = el('risky-list');
+  c.innerHTML = loading();
+  try {
+    const d = await api(`/api/risky?page=${page}`);
+    set('risk-info', `— ${fmt(d.total)} email${d.total !== 1 ? 's' : ''}`);
+    c.innerHTML = d.items.length === 0
+      ? empty('✓', 'Aucun risqué', '')
+      : d.items.map(i => {
+          const cls = i.reason === 'catch-all' ? 'b-catchall' : 'b-risky';
+          return `<div class="eitem"><span class="addr">${esc(i.email)}</span><span class="edate">${i.date ? fmtDate(i.date) : ''}</span><span class="badge ${cls}">${esc(i.reason||'risqué')}</span></div>`;
+        }).join('');
+    renderPagi('risky-pagi', page, d.pages, loadRisky);
+  } catch(e) { c.innerHTML = errBox(e.message); }
+}
+
+async function clearList(type) {
+  if (!confirm(`Vider la liste "${type}" ?`)) return;
+  try {
+    await api(`/api/${type}`, 'DELETE');
+    toast('Liste vidée', 'ok');
+    if (type === 'rejected') loadRejected(1);
+    if (type === 'risky')    loadRisky(1);
+    loadStats();
+  } catch(e) { toast(e.message, 'err'); }
+}
+
+// ─── SETTINGS ──────────────────────────────────────────────────────────────
+let selProvider = 'reoon';
+
+async function loadSettings() {
+  try {
+    const d = await api('/api/settings');
+    selProvider = d.provider || 'reoon';
+    if (d.quota) el('cfg-quota').value = d.quota;
+
+    // Clé masquée
+    const info = el('apikey-info');
+    if (info) info.textContent = d.apiKeyMasked ? `Clé en place : ${d.apiKeyMasked}` : '⚠ Aucune clé enregistrée';
+    if (info) info.style.color = d.hasApiKey ? 'var(--neon-green)' : 'var(--neon-pink)';
+
+    renderProviders(d.providers || []);
+    renderFreePlans(d.providers || []);
+  } catch(e) { console.warn('loadSettings:', e.message); }
+}
+
+function renderProviders(list) {
+  const g = el('prov-grid');
+  if (!g) return;
+  g.innerHTML = list.map(p => {
+    const isSel = p.key === selProvider;
+    const cls   = isSel ? `prov-card sel-${p.color}` : 'prov-card';
+    return `<div class="${cls}" onclick="selectProv('${p.key}','${p.color}')">
+      <div class="pn">${esc(p.name)}</div>
+      <div class="pq">${esc(p.freeplan || p.defaultQuota + '/jour')}</div>
+      <div class="pd">${esc(p.description || '')}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderFreePlans(list) {
+  const g = el('free-plans-list');
+  if (!g) return;
+  const colorMap = { cyan:'var(--neon-cyan)', green:'var(--neon-green)', violet:'var(--neon-violet)', orange:'var(--neon-orange2)', pink:'var(--neon-pink)', lime:'var(--neon-lime)', red:'#ff4f6a' };
+  g.innerHTML = list.map(p => `
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:var(--bg2);border-radius:8px;border:1px solid var(--border)">
+      <div>
+        <div style="font-weight:600;font-size:13px">${esc(p.name)}</div>
+        <a href="${esc(p.website)}" target="_blank" style="font-size:10.5px;color:var(--text3);">${esc(p.website)}</a>
+      </div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:${colorMap[p.color]||'var(--text2)'};text-align:right;max-width:150px">${esc(p.freeplan||'')}</div>
+    </div>`).join('');
+}
+
+function selectProv(key, color) {
+  selProvider = key;
+  renderProviders(
+    Array.from(document.querySelectorAll('.prov-card')).map(c => {
+      const onclick = c.getAttribute('onclick') || '';
+      const m = onclick.match(/selectProv\('([^']+)','([^']+)'\)/);
+      return m ? { key: m[1], name: c.querySelector('.pn')?.textContent||'', freeplan: c.querySelector('.pq')?.textContent||'', description: c.querySelector('.pd')?.textContent||'', color: m[2] } : null;
+    }).filter(Boolean)
+  );
+  // Update selection visually
+  document.querySelectorAll('.prov-card').forEach(c => {
+    const onclick = c.getAttribute('onclick') || '';
+    const m = onclick.match(/selectProv\('([^']+)','([^']+)'\)/);
+    if (!m) return;
+    const isSel = m[1] === key;
+    c.className = isSel ? `prov-card sel-${m[2]}` : 'prov-card';
+  });
+}
+
+async function saveSettings() {
+  const apiKey  = el('cfg-apikey').value.trim();
+  const quotaV  = el('cfg-quota').value;
+  const body    = { provider: selProvider, quota: quotaV ? parseInt(quotaV) : null };
+  if (apiKey) body.apiKey = apiKey;
+  try {
+    await api('/api/settings', 'POST', body);
+    toast('✓ Paramètres enregistrés', 'ok');
+    el('cfg-apikey').value = '';
+    loadSettings(); loadStats();
+  } catch(e) { toast(e.message, 'err'); }
+}
+
+async function testConn() {
+  const apiKey = el('cfg-apikey').value.trim();
+  const btn    = event.target;
+  const res    = el('conn-res');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spin"></span> Test…';
+  res.className = 'conn-res';
+  try {
+    const d = await api('/api/test-connection', 'POST', { provider: selProvider, apiKey: apiKey || undefined });
+    if (d.ok) {
+      res.className = 'conn-res ok';
+      res.textContent = `✓ Connexion réussie — ${d.provider}${d.plan ? ` (${d.plan})` : ''}${d.credits !== undefined ? ` — Crédits: ${d.credits}` : ''}`;
+    } else {
+      res.className = 'conn-res err';
+      res.textContent = `✗ Échec : ${d.error}`;
+    }
+  } catch(e) {
+    res.className = 'conn-res err';
+    res.textContent = `✗ Erreur: ${e.message}`;
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '⚡ Tester';
+    setTimeout(() => { res.className = 'conn-res'; }, 9000);
+  }
+}
+
+// ─── LOGS ──────────────────────────────────────────────────────────────────
+async function loadLogs() {
+  const c = el('logs-list');
+  c.innerHTML = loading();
+  try {
+    const d = await api('/api/logs');
+    if (!d.logs?.length) { c.innerHTML = empty('📋', 'Aucun historique', ''); return; }
+    c.innerHTML = d.logs.map(l => {
+      const extra = l.type === 'process'
+        ? `<div class="log-stats-mini">✓${l.valid||0} valides · ✕${l.invalid||0} invalides · ⚠${l.risky||0} risqués · ${l.remaining||0} restants</div>`
+        : l.type === 'add'
+        ? `<div class="log-stats-mini">+${l.added||0} ajoutés · ${l.skippedDup||0} doublons · ${l.skippedValid||0} déjà validés</div>`
+        : '';
+      return `<div class="log-item">
+        <div class="log-ts">${fmtDate(l.ts)}</div>
+        <div class="log-type lt-${l.type||'info'}">${l.type||'info'}</div>
+        <div><div class="log-msg">${esc(l.msg||'')}</div>${extra}</div>
+      </div>`;
+    }).join('');
+  } catch(e) { c.innerHTML = errBox(e.message); }
+}
+
+async function clearLogs() {
+  if (!confirm('Vider l\'historique ?')) return;
+  try { await api('/api/logs', 'DELETE'); toast('Historique vidé', 'ok'); loadLogs(); }
+  catch(e) { toast(e.message, 'err'); }
+}
+
+// ─── TRAITEMENT MANUEL ──────────────────────────────────────────────────────
+async function manualRun() {
+  const btn = el('btn-run');
+  if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spin"></span> Traitement en cours…'; }
+  try {
+    const d = await api('/api/process', 'POST');
+    if      (d.skipped)         toast(`Ignoré : ${d.reason === 'no_api_key' ? 'Clé API non configurée' : d.reason}`, 'err');
+    else if (d.processed === 0) toast('File vide — rien à traiter', 'info');
+    else                        toast(`✓ ${d.processed} traités — ${d.valid} valides · ${d.invalid} invalides · ${d.risky} risqués`, 'ok');
+    loadStats(); loadQueue(1); loadValidated(1); loadLogs();
+  } catch(e) { toast(`Erreur: ${e.message}`, 'err'); }
+  finally {
+    if (btn) { btn.disabled = false; btn.innerHTML = '▶ Lancer le traitement maintenant'; }
+  }
+}
+
+// ─── COUNTER ───────────────────────────────────────────────────────────────
+function updateCounter() {
+  const raw = el('emails-input').value;
+  const re  = /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/;
+  const n   = [...new Set(raw.split(/[\n,;\s]+/).map(s=>s.trim().toLowerCase()).filter(s=>re.test(s)))].length;
+  const bar = el('e-counter');
+  if (!bar) return;
+  bar.innerHTML = raw.trim()
+    ? (n > 0 ? `<span class="cn">${fmt(n)}</span> email${n>1?'s':''} détecté${n>1?'s':''}` : '<span style="color:var(--neon-pink)">Aucun format valide détecté</span>')
+    : '';
+}
+
+// ─── TABS ──────────────────────────────────────────────────────────────────
+function switchTab(name) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === 'tab-' + name));
+  if (name === 'queue')     loadQueue(1);
+  if (name === 'validated') loadValidated(1);  // remplit aussi la zone de copie
+  if (name === 'rejected')  loadRejected(1);
+  if (name === 'risky')     loadRisky(1);
+  if (name === 'settings')  loadSettings();
+  if (name === 'logs')      loadLogs();
+}
+
+function refreshAll() {
+  loadStats(); ping();
+  const active = document.querySelector('.tab-btn.active')?.dataset.tab;
+  if (active) switchTab(active);
+}
+
+// ─── HELPERS ───────────────────────────────────────────────────────────────
+function el(id)         { return document.getElementById(id); }
+function set(id, val)   { const e = el(id); if (e) e.textContent = val ?? '–'; }
+function fmt(n)         { if (n === null || n === undefined) return '–'; return Number(n).toLocaleString('fr-FR'); }
+function fmtDate(iso)   {
+  if (!iso) return '–';
+  const d = new Date(iso);
+  return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+}
+function esc(s)         { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function badge(id, n)   { const e = el(id); if (e) e.textContent = n > 9999 ? Math.round(n/1000)+'k' : (n||'0'); }
+function loading()      { return '<div style="text-align:center;padding:20px;color:var(--text3)"><span class="spin"></span></div>'; }
+function errBox(msg)    { return `<div class="empty"><div style="color:var(--neon-pink)">${esc(msg)}</div></div>`; }
+function empty(ico, t, s) { return `<div class="empty"><div class="empty-icon">${ico}</div><div>${esc(t)}</div>${s?`<div style="font-size:11px;margin-top:4px">${esc(s)}</div>`:''}</div>`; }
+
+function renderPagi(id, page, pages, cb) {
+  const e = el(id);
+  if (!e || pages <= 1) { if (e) e.innerHTML = ''; return; }
+  e.innerHTML = `
+    <button class="pbtn" ${page<=1?'disabled':''} onclick="(${cb})(${page-1})">‹ Préc.</button>
+    <span class="pi">Page ${page} / ${pages}</span>
+    <button class="pbtn" ${page>=pages?'disabled':''} onclick="(${cb})(${page+1})">Suiv. ›</button>`;
+}
+
+// ─── TOAST ─────────────────────────────────────────────────────────────────
+let _tt;
+function toast(msg, type = 'info') {
+  const e = el('toast');
+  e.textContent = msg;
+  e.className = `show ${type}`;
+  clearTimeout(_tt);
+  _tt = setTimeout(() => e.className = '', 4500);
+}
+</script>
+</body>
+</html>
