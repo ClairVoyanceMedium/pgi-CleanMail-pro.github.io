@@ -8,21 +8,11 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
 
-<!--
-╔══════════════════════════════════════════════════════════════════════╗
-║  PGI • CleanMail' Pro — Configuration                               ║
-║                                                                      ║
-║  ► Modifiez les deux lignes ci-dessous AVANT de déployer :           ║
-║                                                                      ║
-║    WORKER_URL  = URL de votre Cloudflare Worker                      ║
-║    AUTH_TOKEN  = Token secret défini via: wrangler secret put AUTH_TOKEN ║
-║                                                                      ║
-║  Ces valeurs sont la seule chose à modifier dans ce fichier.         ║
-╚══════════════════════════════════════════════════════════════════════╝
--->
+<!-- PGI • CleanMail' Pro — Aucune modification requise dans ce fichier -->
 <script>
-  const WORKER_URL  = 'https://cleanmail-pro.VOTRE-COMPTE.workers.dev'; // ← MODIFIER
-  const AUTH_TOKEN  = 'votre-token-secret-ici';                          // ← MODIFIER
+// URL du Worker : configurée depuis l'onglet Paramètres (stockée dans le navigateur)
+var WORKER_URL = localStorage.getItem('pgi_worker_url') || '';
+var AUTH_TOKEN = localStorage.getItem('pgi_auth_token') || 'pgi-cleanmail-pro';
 </script>
 
 <style>
@@ -554,14 +544,109 @@ hr { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
 .go1 { width:500px;height:500px;top:-150px;right:-100px; background:var(--neon-cyan); }
 .go2 { width:400px;height:400px;bottom:-150px;left:-100px; background:var(--neon-violet); }
 
-/* ─── RESPONSIVE ──────────────────────────────────────────────────────────── */
-@media (max-width:640px) {
-  main { padding: 12px; }
-  .stats-grid { grid-template-columns: repeat(2,1fr); }
-  .sv { font-size: 26px; }
-  header { padding: 0 14px; }
-  .tab-btn { padding: 0 10px; font-size: 11.5px; }
-  .logo { font-size: 15px; }
+/* ─── RESPONSIVE COMPLET — Mobile / Android / Tablette ───────────────────── */
+
+/* Tablette */
+@media (max-width: 900px) {
+  .g2, .g3 { grid-template-columns: 1fr; }
+  .stats-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+/* Mobile / Android */
+@media (max-width: 640px) {
+  :root { --radius: 8px; --radius2: 12px; }
+
+  body { font-size: 14px; }
+  main { padding: 10px; }
+
+  /* Header mobile */
+  header { padding: 0 12px; height: 52px; }
+  .logo { font-size: 14px; }
+  .status-pill { padding: 4px 9px; }
+  .status-pill span { display: none; }  /* Cacher le texte "En ligne" sur mobile */
+  .btn-hdr { padding: 5px 10px; font-size: 11px; }
+
+  /* Tabs scrollables sur mobile */
+  .tabs-bar { padding: 0 10px; }
+  .tab-btn { padding: 0 9px; font-size: 11px; min-height: 42px; }
+  .tab-icon { display: none; }  /* Cacher les icônes pour gagner de la place */
+
+  /* Stats grid : 2 colonnes sur mobile */
+  .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 14px; }
+  .scard { padding: 14px; }
+  .sv { font-size: 28px; }
+  .sl { font-size: 10px; }
+  .ss { font-size: 10px; }
+
+  /* Cards */
+  .card { padding: 14px; }
+  .card-title { font-size: 10.5px; margin-bottom: 12px; }
+
+  /* Boutons */
+  .btn { font-size: 12px; padding: 8px 14px; }
+  .btn-sm { padding: 6px 10px; font-size: 11px; }
+
+  /* Action bars empilées sur mobile */
+  .action-bar { flex-direction: column; align-items: stretch; }
+  .ab-left, .ab-right { width: 100%; }
+  .ab-right { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .ab-right .btn { justify-content: center; }
+
+  /* Email textarea plus petite */
+  .email-textarea { min-height: 120px; font-size: 12px; }
+
+  /* Liste emails */
+  .eitem { padding: 7px 10px; }
+  .eitem .addr { font-size: 11px; }
+  .badge { font-size: 9px; padding: 2px 5px; }
+
+  /* Formulaire settings */
+  .fg input, .fg select { font-size: 13px; padding: 10px 12px; }
+
+  /* Provider grid */
+  .prov-grid { grid-template-columns: repeat(2, 1fr); }
+
+  /* Logs */
+  .log-item { grid-template-columns: 80px 52px 1fr; gap: 6px; font-size: 11px; }
+  .log-ts { font-size: 9.5px; }
+
+  /* Toast en bas, pleine largeur */
+  #toast { bottom: 12px; right: 10px; left: 10px; max-width: none; font-size: 12px; }
+
+  /* Pagination */
+  .pagi { gap: 5px; }
+  .pbtn { padding: 5px 10px; font-size: 11px; }
+
+  /* Sections avec titres */
+  .sh-title { font-size: 13px; }
+  .sh { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .sh .btn-ghost { align-self: flex-end; }
+
+  /* Zone de copie */
+  #validated-copy-area { min-height: 100px; font-size: 11px; }
+
+  /* Info box */
+  .infobox { font-size: 12px; padding: 10px 12px; }
+
+  /* Progress */
+  .progwrap { height: 5px; }
+}
+
+/* Très petits écrans (320px) */
+@media (max-width: 380px) {
+  .stats-grid { grid-template-columns: 1fr 1fr; gap: 7px; }
+  .sv { font-size: 24px; }
+  .tab-btn { padding: 0 7px; font-size: 10.5px; }
+  .prov-grid { grid-template-columns: 1fr 1fr; }
+}
+
+/* Fix touch targets Android */
+@media (hover: none) and (pointer: coarse) {
+  .btn { min-height: 42px; }
+  .btn-sm { min-height: 36px; }
+  .tab-btn { min-height: 44px; }
+  .pbtn { min-height: 36px; }
+  input, select, textarea { font-size: 16px !important; } /* Empêche le zoom auto iOS/Android */
 }
 
 /* Dashboard section */
@@ -638,6 +723,15 @@ hr { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
      DASHBOARD
 ────────────────────────────────────────────────────────────────────────── -->
 <div class="tab-panel active" id="tab-dashboard">
+
+  <!-- Bannière Worker non configuré -->
+  <div id="banner-no-worker" style="display:none;background:rgba(255,109,0,.07);border:1px solid rgba(255,109,0,.3);border-radius:12px;padding:16px 18px;margin-bottom:18px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+    <div>
+      <div style="font-family:'Syne',sans-serif;font-weight:700;color:var(--neon-orange2);margin-bottom:4px">⚡ Dernière étape — connectez votre Worker</div>
+      <div style="font-size:12px;color:var(--text2)">Collez l'URL de votre Worker Cloudflare pour activer le nettoyage automatique.</div>
+    </div>
+    <button class="btn btn-orange-o" onclick="switchTab('settings')" style="white-space:nowrap">⚙ Configurer maintenant</button>
+  </div>
 
   <div class="stats-grid">
     <div class="scard cyan">
@@ -978,21 +1072,44 @@ hr { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
         </div>
       </div>
 
-      <div class="card">
-        <div class="card-title c-violet"><span class="ct-dot"></span>Config Worker</div>
-        <div class="info-row">
-          <span class="ir-label">URL Worker</span>
-          <span id="w-url-disp" style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text3);max-width:200px;overflow:hidden;text-overflow:ellipsis"></span>
+      <div class="card" id="worker-config-card">
+        <div class="card-title c-violet"><span class="ct-dot"></span>Connexion Worker Cloudflare</div>
+
+        <!-- Bannière si pas d'URL configurée -->
+        <div id="no-worker-banner" style="display:none;background:rgba(255,109,0,.08);border:1px solid rgba(255,109,0,.25);border-radius:8px;padding:14px;margin-bottom:14px">
+          <div style="font-weight:700;color:var(--neon-orange2);margin-bottom:6px">⚠ URL Worker non configurée</div>
+          <div style="font-size:12px;color:var(--text2)">Collez l'URL de votre Worker Cloudflare ci-dessous pour activer le système.</div>
         </div>
-        <div class="info-row">
-          <span class="ir-label">Auth Token</span>
-          <span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text3)">••••••••••••</span>
+
+        <div class="fg">
+          <label>URL de votre Worker Cloudflare</label>
+          <input type="url" id="cfg-worker-url"
+            placeholder="https://cleanmail-pro.VOTRE-COMPTE.workers.dev"
+            autocomplete="off"
+            style="font-family:'JetBrains Mono',monospace;font-size:12px">
+          <small>Copiez l'URL affichée après avoir déployé le Worker sur Cloudflare</small>
         </div>
-        <div class="info-row">
+
+        <div class="fg">
+          <label>Auth Token (optionnel)</label>
+          <input type="password" id="cfg-worker-token"
+            placeholder="pgi-cleanmail-pro (par défaut)"
+            autocomplete="off">
+          <small>Laissez vide pour utiliser le token par défaut</small>
+        </div>
+
+        <button class="btn btn-violet" onclick="saveWorkerConfig()" style="width:100%;justify-content:center">
+          💾 Enregistrer la connexion
+        </button>
+
+        <div class="info-row" style="margin-top:12px">
           <span class="ir-label">Cron automatique</span>
           <span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--neon-green)">2h00 UTC / jour</span>
         </div>
-        <small style="color:var(--text3);font-size:11px;margin-top:10px;display:block">Pour modifier l'URL ou le token, éditez les deux lignes const en haut du fichier index.html.</small>
+        <div class="info-row">
+          <span class="ir-label">Provider actif</span>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--neon-green)">Reoon (100/jour gratuit)</span>
+        </div>
       </div>
 
     </div>
@@ -1032,12 +1149,10 @@ hr { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
 
 // ─── API CALL ─────────────────────────────────────────────────────────────
 async function api(path, method = 'GET', body = null) {
+  if (!WORKER_URL) throw new Error('Worker URL non configurée — allez dans Paramètres API');
   const opts = {
     method,
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${AUTH_TOKEN}`,
-    },
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${AUTH_TOKEN}` },
   };
   if (body) opts.body = JSON.stringify(body);
   const res = await fetch(WORKER_URL + path, opts);
@@ -1048,15 +1163,50 @@ async function api(path, method = 'GET', body = null) {
   return res.json();
 }
 
+// ─── SAVE WORKER CONFIG ──────────────────────────────────────────────────────
+function saveWorkerConfig() {
+  const urlIn   = document.getElementById('cfg-worker-url');
+  const tokenIn = document.getElementById('cfg-worker-token');
+  const url     = urlIn?.value.trim().replace(/\/$/, '');
+  const token   = tokenIn?.value.trim();
+
+  if (!url || !url.startsWith('http')) {
+    toast('URL invalide — doit commencer par https://', 'err'); return;
+  }
+
+  WORKER_URL = url;
+  AUTH_TOKEN = token || 'pgi-cleanmail-pro';
+  localStorage.setItem('pgi_worker_url',   WORKER_URL);
+  localStorage.setItem('pgi_auth_token',   AUTH_TOKEN);
+
+  // Masquer bannières
+  const b = document.getElementById('banner-no-worker');
+  if (b) b.style.display = 'none';
+  const nb = document.getElementById('no-worker-banner');
+  if (nb) nb.style.display = 'none';
+
+  toast('✓ Connexion Worker enregistrée', 'ok');
+
+  // Lancer
+  ping();
+  loadStats();
+  loadSettings();
+  loadQueue(1);
+  setInterval(() => { loadStats(); ping(); }, 30000);
+}
+
 // ─── INIT ─────────────────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
-  // Afficher l'URL worker dans la section settings
-  const el = document.getElementById('w-url-disp');
-  if (el) el.textContent = WORKER_URL.replace('https://', '');
+  // Pré-remplir les champs avec les valeurs sauvegardées
+  const urlIn   = document.getElementById('cfg-worker-url');
+  const tokenIn = document.getElementById('cfg-worker-token');
+  if (urlIn   && WORKER_URL) urlIn.value   = WORKER_URL;
+  if (tokenIn && AUTH_TOKEN !== 'pgi-cleanmail-pro') tokenIn.value = AUTH_TOKEN;
 
-  // Vérifier config
-  if (!WORKER_URL || WORKER_URL.includes('VOTRE-COMPTE')) {
-    toast('⚠ Modifiez WORKER_URL et AUTH_TOKEN dans le fichier HTML avant utilisation', 'err');
+  if (!WORKER_URL) {
+    // Pas de Worker configuré : afficher bannière + aller sur settings
+    const b = document.getElementById('banner-no-worker');
+    if (b) b.style.display = 'flex';
     return;
   }
 
@@ -1064,8 +1214,6 @@ window.addEventListener('DOMContentLoaded', () => {
   loadStats();
   loadSettings();
   loadQueue(1);
-
-  // Auto-refresh toutes les 30s
   setInterval(() => { loadStats(); ping(); }, 30000);
 });
 
@@ -1073,19 +1221,22 @@ window.addEventListener('DOMContentLoaded', () => {
 async function ping() {
   const dot = document.getElementById('s-dot');
   const txt = document.getElementById('s-txt');
+  if (!WORKER_URL) {
+    if (dot) dot.className = 's-dot err';
+    if (txt) { txt.textContent = 'Non configuré'; txt.style.color = 'var(--neon-orange2)'; }
+    return;
+  }
   try {
     await fetch(WORKER_URL + '/api/ping', { signal: AbortSignal.timeout(5000) });
-    dot.className = 's-dot ok';
-    txt.textContent = 'En ligne';
-    txt.style.color = 'var(--neon-green)';
+    if (dot) dot.className = 's-dot ok';
+    if (txt) { txt.textContent = 'En ligne'; txt.style.color = 'var(--neon-green)'; }
     if (document.getElementById('sys-worker')) {
       document.getElementById('sys-worker').textContent = '✓ En ligne';
       document.getElementById('sys-worker').style.color = 'var(--neon-green)';
     }
   } catch {
-    dot.className = 's-dot err';
-    txt.textContent = 'Hors ligne';
-    txt.style.color = 'var(--neon-pink)';
+    if (dot) dot.className = 's-dot err';
+    if (txt) { txt.textContent = 'Hors ligne'; txt.style.color = 'var(--neon-pink)'; }
     if (document.getElementById('sys-worker')) {
       document.getElementById('sys-worker').textContent = '✗ Hors ligne';
       document.getElementById('sys-worker').style.color = 'var(--neon-pink)';
