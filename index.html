@@ -554,6 +554,9 @@ main{padding:14px;max-width:1400px;margin:0 auto;width:100%}
       <div class="ir"><span class="ir-l">Provider actif</span><span class="ir-v" id="sys-prov" style="color:var(--cyan)">–</span></div>
       <div class="ir"><span class="ir-l">Dernier traitement</span><span class="ir-v" id="sys-lr">–</span></div>
       <div class="ir"><span class="ir-l">Total traités</span><span class="ir-v" id="sys-tot" style="color:var(--cyan)">–</span></div>
+        <div style="margin-top:12px">
+          <button class="btn btn-danger btn-sm" style="width:100%;justify-content:center" onclick="resetStats()">🗑 Réinitialiser les métriques</button>
+        </div>
     </div>
     <div class="card">
       <div class="ct c-cyan"><span class="ct-d"></span>Automatisation</div>
@@ -1192,6 +1195,12 @@ function pagi(elId,page,pages,cb){
     +'<span class="pi">'+page+' / '+pages+'</span>'
     +'<button class="pbtn"'+(page>=pages?' disabled':'')+' onclick="('+cb+')('+(page+1)+')">Suiv. ›</button>';
 }
+async function resetStats(){
+  if(!confirm('Réinitialiser toutes les métriques du dashboard ?\n\n✓ Vos emails en attente sont conservés\n✓ Vos emails nettoyés sont conservés\n✓ La campagne continue normalement\n\nSeuls les compteurs (total traités, dernier cycle…) sont remis à zéro.'))return;
+  try{await api('/api/reset-stats','POST');toast('✓ Métriques réinitialisées','ok');loadStats();}
+  catch(e){toast(e.message,'err')}
+}
+
 let _tt;
 function toast(msg,type='info'){
   const e=id('toast');e.textContent=msg;e.className='show '+type;
