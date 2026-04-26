@@ -6,10 +6,23 @@
 <title>PGI • CleanMail' Pro</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<!-- URL Worker : configurée depuis l'onglet Paramètres -->
+<!-- PGI • CleanMail' Pro — Aucune modification requise dans ce fichier -->
 <script>
-var WORKER_URL = localStorage.getItem('pgi_worker_url') || '';
-var AUTH_TOKEN = localStorage.getItem('pgi_auth_token') || 'pgi-cleanmail-pro';
+// ── Clés localStorage namespaced — exclusives à CleanMail Pro ──────────────
+const LS_URL   = 'pgi_cleanmail_worker_url';
+const LS_TOKEN = 'pgi_cleanmail_auth_token';
+const APP_NAME = 'CleanMail Pro';
+
+// NE PAS reprendre pgi_worker_url / pgi_auth_token (peuvent appartenir à une autre app)
+// Si vide → afficher "non configuré" et forcer une configuration propre
+var WORKER_URL = localStorage.getItem(LS_URL) || '';
+var AUTH_TOKEN = localStorage.getItem(LS_TOKEN) || 'pgi-cleanmail-pro';
+
+// Nettoyer les anciennes clés génériques si les nouvelles sont déjà en place
+if (WORKER_URL) {
+  localStorage.removeItem('pgi_worker_url');
+  localStorage.removeItem('pgi_auth_token');
+}
 </script>
 <style>
 /* ══ RESET & BASE ══════════════════════════════════════════════════════════ */
@@ -477,7 +490,13 @@ main{padding:14px;max-width:1400px;margin:0 auto;width:100%}
 
 <!-- HEADER -->
 <header>
-  <span class="logo">PGI • CleanMail' Pro</span>
+  <div style="display:flex;flex-direction:column;gap:1px">
+    <span class="logo">PGI • CleanMail' Pro</span>
+    <span style="font-size:10px;color:var(--text3);font-family:'Inter',sans-serif;letter-spacing:.3px">
+      App : <span class="app-name" style="color:var(--cyan)">CleanMail Pro</span>
+      · Worker : <span class="app-worker-url" style="color:var(--text2)">…</span>
+    </span>
+  </div>
   <div class="hdr-r">
     <div class="s-pill"><div class="s-dot" id="s-dot"></div><span class="s-txt" id="s-txt">…</span></div>
     <button class="btn-h keep btn-sm" onclick="switchTab('settings')">⚙</button>
@@ -771,7 +790,9 @@ main{padding:14px;max-width:1400px;margin:0 auto;width:100%}
 
       <div class="card">
         <div class="ct c-violet"><span class="ct-d"></span>Infos Worker</div>
-        <div class="ir"><span class="ir-l">URL configurée</span><span class="ir-v" id="w-url-disp" style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">–</span></div>
+        <div class="ir"><span class="ir-l">Application active</span><span class="ir-v app-name" style="color:var(--cyan)">CleanMail Pro</span></div>
+        <div class="ir"><span class="ir-l">URL configurée</span><span class="ir-v app-worker-url" style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">–</span></div>
+        <div class="ir"><span class="ir-l">Clé localStorage</span><span class="ir-v" style="color:var(--green)">pgi_cleanmail_worker_url</span></div>
         <div class="ir"><span class="ir-l">Cron automatique</span><span class="ir-v" style="color:var(--green)">2h00 UTC / jour</span></div>
         <div class="ir"><span class="ir-l">Sauvegarde</span><span class="ir-v" style="color:var(--green)">Toutes les 5 emails</span></div>
       </div>
@@ -809,8 +830,17 @@ async function api(path, method='GET', body=null){
   return res.json();
 }
 
+// ── APP INFO ──────────────────────────────────────────────────────────────────
+function updateAppInfo(){
+  const appEls=document.querySelectorAll('.app-name');
+  appEls.forEach(e=>e.textContent=APP_NAME);
+  const urlEls=document.querySelectorAll('.app-worker-url');
+  urlEls.forEach(e=>e.textContent=WORKER_URL?WORKER_URL.replace('https://',''):'Non configuré');
+}
+
 // ── INIT ─────────────────────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded',()=>{
+  updateAppInfo();
   const ui=document.getElementById('cfg-url');
   const ti=document.getElementById('cfg-token');
   if(ui&&WORKER_URL) ui.value=WORKER_URL;
@@ -833,11 +863,15 @@ function saveWorkerCfg(){
   const t=(document.getElementById('cfg-token').value||'').trim();
   if(!u.startsWith('http')){toast('URL invalide','err');return}
   WORKER_URL=u; AUTH_TOKEN=t||'pgi-cleanmail-pro';
-  localStorage.setItem('pgi_worker_url',WORKER_URL);
-  localStorage.setItem('pgi_auth_token',AUTH_TOKEN);
+  localStorage.setItem(LS_URL,   WORKER_URL);
+  localStorage.setItem(LS_TOKEN, AUTH_TOKEN);
+  // Nettoyer les anciennes clés génériques
+  localStorage.removeItem('pgi_worker_url');
+  localStorage.removeItem('pgi_auth_token');
   const nb=document.getElementById('no-worker');if(nb)nb.style.display='none';
   const nb2=document.getElementById('no-worker-box');if(nb2)nb2.style.display='none';
   const wd=document.getElementById('w-url-disp');if(wd)wd.textContent=WORKER_URL.replace('https://','');
+  updateAppInfo();
   toast('✓ Worker configuré','ok');
   ping();loadStats();loadSettings();loadQueue(1);
   setInterval(()=>{loadStats();ping();},30000);
