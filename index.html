@@ -1176,10 +1176,15 @@ async function manualRun(){
   try{
     const d=await api('/api/process','POST');
     if(d.skipped){
-      const msgs={paused:'Campagne en pause — cliquez Reprendre',stopped:'Campagne arrêtée — cliquez Reprendre',no_api_key:'Clé API non configurée',unknown_provider:'Provider inconnu'};
+      const msgs={paused:'Campagne en pause — cliquez Reprendre',stopped:'Campagne arrêtée — cliquez Reprendre',no_api_key:'⚠ Clé API non configurée — allez dans Paramètres',unknown_provider:'Provider inconnu'};
       toast(msgs[d.reason]||'Ignoré: '+d.reason,'err');
-    }else if(!d.processed){toast('File vide — rien à traiter','info')}
-    else{toast('✓ '+d.processed+' traités — '+d.valid+' nettoyés · '+d.invalid+' invalides · '+d.risky+' risqués','ok')}
+    }else if(d.processed===0 && d.remaining===0){
+      toast('File vide — rien à traiter','info');
+    }else if(d.processed===0 && d.remaining>0){
+      toast('⚠ 0 emails traités — '+( d.apiKeyInvalid?'Clé API invalide, vérifiez dans Paramètres':d.quotaExceeded?'Quota épuisé pour aujourd\'hui':'Erreur API — vérifiez l\'Historique'),'err');
+    }else{
+      toast('✓ '+d.processed+' traités — '+d.valid+' nettoyés · '+d.invalid+' invalides · '+d.risky+' risqués','ok');
+    }
     loadStats();loadQueue(1);if(document.querySelector('.panel.on')?.id==='p-validated')loadValidated(1);loadLogs();
   }catch(e){toast('Erreur: '+e.message,'err')}
   finally{if(btn){btn.disabled=false;btn.innerHTML='▶ Lancer maintenant'}}
